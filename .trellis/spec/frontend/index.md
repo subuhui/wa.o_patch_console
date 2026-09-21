@@ -1,39 +1,28 @@
 # Frontend Development Guidelines
 
-> Best practices for frontend development in this project.
+> Best practices and architecture guidelines for Shorebird Console.
 
 ---
 
 ## Overview
 
-This directory contains guidelines for frontend development. Fill in each file with your project's specific conventions.
+This directory contains specifications and guidelines for frontend development in the Shorebird Console project, capturing the actual patterns used in the codebase.
 
 ---
 
 ## Guidelines Index
 
 | Guide | Description | Status |
-|-------|-------------|--------|
-| [Directory Structure](./directory-structure.md) | Module organization and file layout | To fill |
-| [Component Guidelines](./component-guidelines.md) | Component patterns, props, composition | To fill |
-| [Hook Guidelines](./hook-guidelines.md) | Custom hooks, data fetching patterns | To fill |
-| [State Management](./state-management.md) | Local state, global state, server state | To fill |
-| [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | To fill |
-| [Type Safety](./type-safety.md) | Type patterns, validation | To fill |
+|---|---|:---:|
+| [Directory Structure](./directory-structure.md) | Domain-driven vertical slice directory layout | ✅ Documented |
+| [Component Guidelines](./component-guidelines.md) | Vue 3 `<script setup>`, Element Plus UI, form handling | ✅ Documented |
+| [Hook & Data Fetching](./hook-guidelines.md) | Centralized Axios client, TanStack Vue Query patterns | ✅ Documented |
+| [State Management](./state-management.md) | Pinia stores, auth lifecycle, route navigation guards | ✅ Documented |
+| [Type Safety](./type-safety.md) | TypeScript interfaces, Zod schema runtime validation | ✅ Documented |
+| [Quality Guidelines](./quality-guidelines.md) | Vitest unit tests, Playwright E2E tests, Sentry logging | ✅ Documented |
 
 ---
 
-## How to Fill These Guidelines
+## Language
 
-For each guideline file:
-
-1. Document your project's **actual conventions** (not ideals)
-2. Include **code examples** from your codebase
-3. List **forbidden patterns** and why
-4. Add **common mistakes** your team has made
-
-The goal is to help AI assistants and new team members understand how YOUR project works.
-
----
-
-**Language**: All documentation should be written in **English**.
+All documentation in this directory is written in **English** for Trellis AI agents compatibility.

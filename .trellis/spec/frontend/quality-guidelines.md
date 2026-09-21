@@ -1,51 +1,92 @@
-# Quality Guidelines
+# Quality & Testing Guidelines
 
-> Code quality standards for frontend development.
+> Unit tests, E2E browser tests, error logging, and code review standards.
 
 ---
 
 ## Overview
 
-<!--
-Document your project's quality standards here.
-
-Questions to answer:
-- What patterns are forbidden?
-- What linting rules do you enforce?
-- What are your testing requirements?
-- What code review standards apply?
--->
-
-(To be filled by the team)
+Code quality in Shorebird Console is maintained through automated tests, linting hooks, and error monitoring.
 
 ---
 
-## Forbidden Patterns
+## Testing Standards
 
-<!-- Patterns that should never be used and why -->
+### 1. Unit Testing with Vitest (`vitest`)
+Unit tests live in `tests/` and cover isolated components and Pinia stores:
 
-(To be filled by the team)
+```ts
+import { describe, it, expect, beforeEach } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
+import { useAuthStore } from '@/stores/auth'
+
+describe('useAuthStore', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    localStorage.clear()
+  })
+
+  it('updates token and persists to localStorage', () => {
+    const auth = useAuthStore()
+    auth.setToken('test_secret_token')
+
+    expect(auth.token).toBe('test_secret_token')
+    expect(auth.isAuthenticated).toBe(true)
+    expect(localStorage.getItem('shorebird_token')).toBe('test_secret_token')
+  })
+})
+```
+*Real Examples*:
+- [`tests/stores/auth.spec.ts`](file:///Users/xxz/shorebird/shorebird-console/tests/stores/auth.spec.ts)
+- [`tests/components/StatusTag.spec.ts`](file:///Users/xxz/shorebird/shorebird-console/tests/components/StatusTag.spec.ts)
+
+Execute via:
+```sh
+pnpm test:unit
+```
+
+### 2. End-to-End Browser Testing with Playwright (`@playwright/test`)
+E2E tests live in `e2e/` and execute full user workflows in a real browser:
+
+```ts
+import { test, expect } from '@playwright/test'
+
+test('allows entering private token and logging in', async ({ page }) => {
+  await page.goto('/login')
+  await page.fill('input[type="password"]', 'sb_api_private_shorebird_token')
+  await page.click('button.submit-btn')
+  await expect(page).toHaveURL(/.*apps/)
+  await expect(page.locator('.page-title')).toContainText('应用列表')
+})
+```
+*Real Examples*:
+- [`e2e/auth.spec.ts`](file:///Users/xxz/shorebird/shorebird-console/e2e/auth.spec.ts)
+- [`e2e/console.spec.ts`](file:///Users/xxz/shorebird/shorebird-console/e2e/console.spec.ts)
+
+Execute via:
+```sh
+pnpm test:e2e
+```
 
 ---
 
-## Required Patterns
+## Logging & Monitoring
 
-<!-- Patterns that must always be used -->
+### 1. Sentry Error Tracking
+Configured in [`src/plugins/sentry.ts`](file:///Users/xxz/shorebird/shorebird-console/src/plugins/sentry.ts) with `@sentry/vue`:
+- Initialized if `VITE_SENTRY_DSN` is present.
+- Integrates browser tracing with Vue Router navigation.
+- Replays on error at 100% rate.
 
-(To be filled by the team)
+### 2. UI User Feedback
+- **Informational / Warnings**: `ElMessage.warning('...')`
+- **Success Confirmations**: `ElMessage.success('...')`
+- **Error Alerts**: Handled centrally by `apiClient` response interceptor or explicit `ElMessage.error(...)`.
 
 ---
 
-## Testing Requirements
+## Pre-commit Quality Gates
 
-<!-- What level of testing is expected -->
-
-(To be filled by the team)
-
----
-
-## Code Review Checklist
-
-<!-- What reviewers should check -->
-
-(To be filled by the team)
+The repository enforces Git hooks using **Husky**:
+1. `pre-commit`: Runs `lint-staged` with `eslint --fix` and `prettier --write`.
+2. `commit-msg`: Enforces Conventional Commits via `commitlint`.

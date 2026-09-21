@@ -1,38 +1,15 @@
 # Backend Development Guidelines
 
-> Best practices for backend development in this project.
+> Note: Shorebird Console is a pure frontend Single Page Application (SPA).
 
 ---
 
 ## Overview
 
-This directory contains guidelines for backend development. Fill in each file with your project's specific conventions.
+This repository (`shorebird-console`) contains only the Vue 3 web frontend application.
 
----
+The backend API server is implemented as an independent Go service in the sibling repository [`shorebird-server`](file:///Users/xxz/shorebird/shorebird-server).
 
-## Guidelines Index
-
-| Guide | Description | Status |
-|-------|-------------|--------|
-| [Directory Structure](./directory-structure.md) | Module organization and file layout | To fill |
-| [Database Guidelines](./database-guidelines.md) | ORM patterns, queries, migrations | To fill |
-| [Error Handling](./error-handling.md) | Error types, handling strategies | To fill |
-| [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | To fill |
-| [Logging Guidelines](./logging-guidelines.md) | Structured logging, log levels | To fill |
-
----
-
-## How to Fill These Guidelines
-
-For each guideline file:
-
-1. Document your project's **actual conventions** (not ideals)
-2. Include **code examples** from your codebase
-3. List **forbidden patterns** and why
-4. Add **common mistakes** your team has made
-
-The goal is to help AI assistants and new team members understand how YOUR project works.
-
----
-
-**Language**: All documentation should be written in **English**.
+For backend API contracts and schemas used by the console, refer to:
+- [`src/api/openapi.yaml`](file:///Users/xxz/shorebird/shorebird-console/src/api/openapi.yaml) (OpenAPI 3.0 specification)
+- [`src/api/client.ts`](file:///Users/xxz/shorebird/shorebird-console/src/api/client.ts) (Frontend Axios client & proxy)
