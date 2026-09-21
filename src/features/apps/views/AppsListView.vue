@@ -182,10 +182,10 @@ function goToPatches(appId: string) {
             <el-button link type="primary" :icon="Cpu" @click="goToPatches(row.app_id)">
               补丁
             </el-button>
-            <el-button link type="warning" :icon="Edit" @click="handleRename(row)">
+            <el-button link type="warning" :icon="Edit" @click="handleRename(row as AppMetadata)">
               改名
             </el-button>
-            <el-button link type="danger" :icon="Delete" @click="handleDelete(row)">
+            <el-button link type="danger" :icon="Delete" @click="handleDelete(row as AppMetadata)">
               删除
             </el-button>
           </template>

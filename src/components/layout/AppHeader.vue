@@ -1,13 +1,41 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAppConfigStore } from '@/stores/app-config'
+import { useQuery } from '@tanstack/vue-query'
+import apiClient from '@/api/client'
 import { Fold, Expand, Moon, Sunny, UserFilled, SwitchButton } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
+interface AppMetadata {
+  app_id: string
+  display_name: string
+}
+
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const appConfigStore = useAppConfigStore()
+
+const { data: appsData } = useQuery<{ apps: AppMetadata[] }>({
+  queryKey: ['apps'],
+  queryFn: async () => {
+    const res = await apiClient.get('/apps')
+    return res.data
+  },
+  enabled: computed(() => authStore.isAuthenticated),
+})
+
+const selectedAppId = computed({
+  get: () => (route.params.appId as string) || authStore.currentAppId || '',
+  set: val => {
+    authStore.setCurrentAppId(val)
+    if (route.name === 'releases' || route.name === 'patches') {
+      router.push({ name: route.name, params: { appId: val } })
+    }
+  },
+})
 
 async function handleLogout() {
   try {
@@ -34,10 +62,23 @@ async function handleLogout() {
         </el-icon>
       </el-button>
 
-      <div v-if="authStore.currentAppId" class="current-app-badge">
-        <el-tag type="info" effect="plain" round>
-          当前应用: <strong>{{ authStore.currentAppId }}</strong>
-        </el-tag>
+      <div
+        v-if="authStore.isAuthenticated && appsData?.apps && appsData.apps.length > 0"
+        class="current-app-selector"
+      >
+        <el-select
+          v-model="selectedAppId"
+          placeholder="切换当前应用"
+          size="default"
+          style="width: 220px"
+        >
+          <el-option
+            v-for="app in appsData.apps"
+            :key="app.app_id"
+            :label="app.display_name"
+            :value="app.app_id"
+          />
+        </el-select>
       </div>
     </div>
 

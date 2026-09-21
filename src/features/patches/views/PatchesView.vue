@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import apiClient from '@/api/client'
 import StatusTag from '@/components/common/StatusTag.vue'
-import { ArrowLeft, RefreshRight, Check, Back } from '@element-plus/icons-vue'
+import {
+  ArrowLeft,
+  RefreshRight,
+  Check,
+  Back,
+  Plus,
+  Delete,
+  Operation,
+} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 interface PatchArtifact {
@@ -25,6 +33,12 @@ interface ReleasePatch {
   is_rolled_back: boolean
 }
 
+interface Release {
+  id: number
+  version: string
+  display_name?: string | null
+}
+
 interface Channel {
   id: number
   name: string
@@ -35,7 +49,29 @@ const router = useRouter()
 const queryClient = useQueryClient()
 
 const appId = computed(() => route.params.appId as string)
-const releaseId = ref<number>(101) // default release id for demo / inspection
+
+// Fetch releases for this app to populate selector
+const { data: releasesData } = useQuery<{ releases: Release[] }>({
+  queryKey: ['releases', appId],
+  queryFn: async () => {
+    const res = await apiClient.get(`/apps/${appId.value}/releases`)
+    return res.data
+  },
+  enabled: computed(() => Boolean(appId.value)),
+})
+
+const releaseId = ref<number | null>(route.query.releaseId ? Number(route.query.releaseId) : null)
+
+// Default to first release when releases load if not set
+watch(
+  () => releasesData.value?.releases,
+  newReleases => {
+    if (newReleases && newReleases.length > 0 && !releaseId.value) {
+      releaseId.value = newReleases[0].id
+    }
+  },
+  { immediate: true },
+)
 
 // Fetch channels for this app
 const { data: channelsData } = useQuery<Channel[]>({
@@ -51,11 +87,59 @@ const { data: channelsData } = useQuery<Channel[]>({
 const { data: patchesData, isLoading } = useQuery<{ patches: ReleasePatch[] }>({
   queryKey: ['patches', appId, releaseId],
   queryFn: async () => {
+    if (!releaseId.value) return { patches: [] }
     const res = await apiClient.get(`/apps/${appId.value}/releases/${releaseId.value}/patches`)
     return res.data
   },
-  enabled: computed(() => Boolean(appId.value)),
+  enabled: computed(() => Boolean(appId.value && releaseId.value)),
 })
+
+// Channel Management Drawer
+const channelDrawerVisible = ref(false)
+const newChannelName = ref('')
+
+const createChannelMutation = useMutation({
+  mutationFn: (channel: string) => apiClient.post(`/apps/${appId.value}/channels`, { channel }),
+  onSuccess: () => {
+    ElMessage.success('渠道创建成功')
+    newChannelName.value = ''
+    queryClient.invalidateQueries({ queryKey: ['channels', appId] })
+  },
+})
+
+function handleCreateChannel() {
+  const name = newChannelName.value.trim()
+  if (!name) {
+    ElMessage.warning('请输入渠道名称')
+    return
+  }
+  createChannelMutation.mutate(name)
+}
+
+async function handleDeleteChannel(channel: Channel) {
+  const builtinChannels = ['stable', 'beta', 'staging']
+  if (builtinChannels.includes(channel.name.toLowerCase())) {
+    ElMessage.error(`内置渠道 "${channel.name}" 不允许删除`)
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除自定义渠道 "${channel.name}" 吗？删除后关联的补丁将解除渠道关联。`,
+      '删除渠道',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
+    await apiClient.delete(`/apps/${appId.value}/channels/${channel.id}`)
+    ElMessage.success('渠道已删除')
+    queryClient.invalidateQueries({ queryKey: ['channels', appId] })
+  } catch {
+    // cancelled
+  }
+}
 
 // Promote Dialog
 const promoteDialogVisible = ref(false)
@@ -150,10 +234,28 @@ async function handleRollforward(patch: ReleasePatch) {
           >
         </div>
       </div>
+
+      <div class="header-actions flex-center">
+        <el-button :icon="Operation" @click="channelDrawerVisible = true"> 渠道管理 </el-button>
+
+        <!-- Release selector -->
+        <el-select v-model="releaseId" placeholder="选择 Release 版本" style="width: 200px">
+          <el-option
+            v-for="rel in releasesData?.releases || []"
+            :key="rel.id"
+            :label="`${rel.version} (ID: ${rel.id})`"
+            :value="rel.id"
+          />
+        </el-select>
+      </div>
     </div>
 
     <el-card v-loading="isLoading" shadow="never" class="table-card">
-      <el-table :data="patchesData?.patches || []" stripe style="width: 100%">
+      <el-empty
+        v-if="!patchesData?.patches || patchesData.patches.length === 0"
+        description="当前版本暂无补丁记录"
+      />
+      <el-table v-else :data="patchesData.patches" stripe style="width: 100%">
         <el-table-column prop="number" label="补丁编号" width="120">
           <template #default="{ row }">
             <strong>#{{ row.number }}</strong>
@@ -196,7 +298,12 @@ async function handleRollforward(patch: ReleasePatch) {
 
         <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" :icon="Check" @click="openPromoteDialog(row)">
+            <el-button
+              link
+              type="primary"
+              :icon="Check"
+              @click="openPromoteDialog(row as ReleasePatch)"
+            >
               发布/切换渠道
             </el-button>
 
@@ -205,7 +312,7 @@ async function handleRollforward(patch: ReleasePatch) {
               link
               type="warning"
               :icon="Back"
-              @click="handleRollback(row)"
+              @click="handleRollback(row as ReleasePatch)"
             >
               回滚
             </el-button>
@@ -215,7 +322,7 @@ async function handleRollforward(patch: ReleasePatch) {
               link
               type="success"
               :icon="RefreshRight"
-              @click="handleRollforward(row)"
+              @click="handleRollforward(row as ReleasePatch)"
             >
               重新激活
             </el-button>
@@ -252,6 +359,58 @@ async function handleRollforward(patch: ReleasePatch) {
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- Channel Management Drawer -->
+    <el-drawer v-model="channelDrawerVisible" title="应用渠道管理 (Channels)" size="480px">
+      <div class="channel-manage">
+        <div class="channel-create flex-between">
+          <el-input
+            v-model="newChannelName"
+            placeholder="输入新渠道名 (例如 canary)"
+            style="flex: 1; margin-right: 12px"
+          />
+          <el-button
+            type="primary"
+            :icon="Plus"
+            :loading="createChannelMutation.isPending.value"
+            @click="handleCreateChannel"
+          >
+            新增
+          </el-button>
+        </div>
+
+        <el-divider />
+
+        <el-table :data="channelsData || []" stripe>
+          <el-table-column prop="name" label="渠道名称">
+            <template #default="{ row }">
+              <strong>{{ row.name }}</strong>
+              <el-tag
+                v-if="['stable', 'beta', 'staging'].includes(row.name.toLowerCase())"
+                size="small"
+                type="info"
+                style="margin-left: 8px"
+              >
+                内置
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="100">
+            <template #default="{ row }">
+              <el-button
+                v-if="!['stable', 'beta', 'staging'].includes(row.name.toLowerCase())"
+                link
+                type="danger"
+                :icon="Delete"
+                @click="handleDeleteChannel(row as Channel)"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -267,6 +426,10 @@ async function handleRollforward(patch: ReleasePatch) {
 
 .header-info {
   gap: 8px;
+}
+
+.header-actions {
+  gap: 12px;
 }
 
 .page-title {
@@ -287,5 +450,9 @@ async function handleRollforward(patch: ReleasePatch) {
 .text-muted {
   color: var(--el-text-color-secondary);
   font-size: 0.85rem;
+}
+
+.channel-create {
+  margin-bottom: 16px;
 }
 </style>

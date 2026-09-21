@@ -93,6 +93,14 @@ async function viewArtifacts(release: Release) {
 function goToPatches() {
   router.push({ name: 'patches', params: { appId: appId.value } })
 }
+
+function goToReleasePatches(relId: number) {
+  router.push({
+    name: 'patches',
+    params: { appId: appId.value },
+    query: { releaseId: relId },
+  })
+}
 </script>
 
 <template>
@@ -160,9 +168,14 @@ function goToPatches() {
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="viewArtifacts(row)"> 产物详情 </el-button>
+            <el-button link type="primary" :icon="Cpu" @click="goToReleasePatches(row.id)">
+              查看补丁
+            </el-button>
+            <el-button link type="primary" @click="viewArtifacts(row as Release)">
+              产物详情
+            </el-button>
           </template>
         </el-table-column>
       </el-table>

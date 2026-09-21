@@ -214,10 +214,21 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 })
   }),
 
-  // Diagnostics links
   http.get('/api/v1/diagnostics/gcp_download', () => {
     return HttpResponse.json({
       url: '/api/v1/diagnostics/download?token=mock_diag_token_download_123',
+    })
+  }),
+
+  http.get('/api/v1/diagnostics/download', () => {
+    // Return 2MB mock binary data for speed test
+    const data = new Uint8Array(2 * 1024 * 1024)
+    return new HttpResponse(data, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': String(data.byteLength),
+      },
     })
   }),
 
@@ -225,5 +236,9 @@ export const handlers = [
     return HttpResponse.json({
       url: '/api/v1/diagnostics/upload?token=mock_diag_token_upload_123',
     })
+  }),
+
+  http.post('/api/v1/diagnostics/upload', () => {
+    return new HttpResponse(null, { status: 204 })
   }),
 ]
