@@ -15,8 +15,16 @@ async function testDownload() {
   const startTime = performance.now()
   try {
     const res = await apiClient.get('/diagnostics/gcp_download')
-    const downloadUrl = res.data.download_url || res.data.url
+    let downloadUrl = res.data.download_url || res.data.url
     if (!downloadUrl) throw new Error('No download URL returned')
+    try {
+      const parsed = new URL(downloadUrl, window.location.origin)
+      if (parsed.pathname.startsWith('/api/')) {
+        downloadUrl = parsed.pathname + parsed.search
+      }
+    } catch {
+      // ignore parse error, fallback to raw url
+    }
     // Fetch test payload
     const testRes = await fetch(downloadUrl)
     const blob = await testRes.blob()
@@ -39,8 +47,16 @@ async function testUpload() {
   const startTime = performance.now()
   try {
     const res = await apiClient.get('/diagnostics/gcp_upload')
-    const uploadUrl = res.data.upload_url || res.data.url
+    let uploadUrl = res.data.upload_url || res.data.url
     if (!uploadUrl) throw new Error('No upload URL returned')
+    try {
+      const parsed = new URL(uploadUrl, window.location.origin)
+      if (parsed.pathname.startsWith('/api/')) {
+        uploadUrl = parsed.pathname + parsed.search
+      }
+    } catch {
+      // ignore parse error, fallback to raw url
+    }
     // Server expects exactly 5,000,000 bytes
     const mockData = new Uint8Array(5000000)
     const formData = new FormData()
