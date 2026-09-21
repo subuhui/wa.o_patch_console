@@ -15,7 +15,8 @@ async function testDownload() {
   const startTime = performance.now()
   try {
     const res = await apiClient.get('/diagnostics/gcp_download')
-    const downloadUrl = res.data.url
+    const downloadUrl = res.data.download_url || res.data.url
+    if (!downloadUrl) throw new Error('No download URL returned')
     // Fetch test payload
     const testRes = await fetch(downloadUrl)
     const blob = await testRes.blob()
@@ -38,20 +39,25 @@ async function testUpload() {
   const startTime = performance.now()
   try {
     const res = await apiClient.get('/diagnostics/gcp_upload')
-    const uploadUrl = res.data.url
-    // Create 5MB mock payload
-    const mockData = new Uint8Array(5 * 1024 * 1024)
+    const uploadUrl = res.data.upload_url || res.data.url
+    if (!uploadUrl) throw new Error('No upload URL returned')
+    // Server expects exactly 5,000,000 bytes
+    const mockData = new Uint8Array(5000000)
     const formData = new FormData()
-    formData.append('file', new Blob([mockData]))
+    formData.append('file', new Blob([mockData]), 'diagnostics.bin')
 
-    await fetch(uploadUrl, {
+    const uploadRes = await fetch(uploadUrl, {
       method: 'POST',
       body: formData,
     })
+    if (!uploadRes.ok) {
+      throw new Error(`Upload failed with status ${uploadRes.status}`)
+    }
     const endTime = performance.now()
     const durationSec = (endTime - startTime) / 1000
-    const speedMbps = ((5 * 8) / durationSec).toFixed(2)
-    uploadSpeed.value = `${speedMbps} Mbps (5 MB / ${durationSec.toFixed(2)}s)`
+    const sizeMb = 5000000 / (1024 * 1024)
+    const speedMbps = ((sizeMb * 8) / durationSec).toFixed(2)
+    uploadSpeed.value = `${speedMbps} Mbps (${sizeMb.toFixed(1)} MB / ${durationSec.toFixed(2)}s)`
     ElMessage.success('上传测速完成')
   } catch {
     uploadSpeed.value = '测速失败 (服务不可达或未配置 PublicURL)'

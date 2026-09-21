@@ -65,6 +65,19 @@ async function handleLogin() {
         </el-form-item>
 
         <el-form-item>
+          <div class="token-helper flex-between">
+            <span class="token-hint"
+              >服务端 Token: <code>sb_api_private_shorebird_token</code></span
+            >
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="tokenForm.token = 'sb_api_private_shorebird_token'"
+            >
+              一键填入
+            </el-button>
+          </div>
           <el-button
             type="primary"
             size="large"
@@ -81,6 +94,18 @@ async function handleLogin() {
 </template>
 
 <style scoped>
+.token-helper {
+  width: 100%;
+  margin-bottom: 12px;
+  font-size: 0.8rem;
+  color: var(--el-text-color-secondary);
+}
+.token-helper code {
+  background-color: var(--el-fill-color-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--el-color-primary);
+}
 .login-wrapper {
   height: 100vh;
   width: 100vw;

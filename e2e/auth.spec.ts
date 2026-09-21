@@ -9,7 +9,7 @@ test.describe('Shorebird Console Authentication Flow', () => {
 
   test('allows entering private token and logging in', async ({ page }) => {
     await page.goto('/login')
-    await page.fill('input[type="password"]', 'mock_shorebird_private_token')
+    await page.fill('input[type="password"]', 'sb_api_private_shorebird_token')
     await page.click('button.submit-btn')
     await expect(page).toHaveURL(/.*apps/)
     await expect(page.locator('.page-title')).toContainText('应用列表')
