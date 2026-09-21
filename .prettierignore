@@ -1,0 +1,9 @@
+dist
+node_modules
+coverage
+.trellis
+src/api/generated
+auto-imports.d.ts
+components.d.ts
+playwright-report
+test-results

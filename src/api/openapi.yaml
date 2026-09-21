@@ -1,0 +1,671 @@
+openapi: 3.0.3
+info:
+  title: Shorebird Private Server API
+  version: 1.0.0
+  description: OpenAPI 3.0 specification for Shorebird Private Patch Server
+paths:
+  /users/me:
+    get:
+      summary: Get current authenticated user
+      tags: [Auth]
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResp'
+
+  /apps:
+    get:
+      summary: List all applications
+      tags: [Apps]
+      operationId: getApps
+      responses:
+        '200':
+          description: List of apps
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAppsResp'
+    post:
+      summary: Create a new application
+      tags: [Apps]
+      operationId: createApp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppReq'
+      responses:
+        '201':
+          description: App created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResp'
+
+  /apps/{app_id}:
+    patch:
+      summary: Rename an application
+      tags: [Apps]
+      operationId: renameApp
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenameAppReq'
+      responses:
+        '200':
+          description: App renamed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppResp'
+    delete:
+      summary: Delete an application
+      tags: [Apps]
+      operationId: deleteApp
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: App deleted successfully
+
+  /apps/{app_id}/channels:
+    get:
+      summary: List channels for an application
+      tags: [Channels]
+      operationId: getChannels
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of channels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChannelResp'
+    post:
+      summary: Create a new channel
+      tags: [Channels]
+      operationId: createChannel
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChannelReq'
+      responses:
+        '201':
+          description: Channel created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelResp'
+
+  /apps/{app_id}/channels/{channel_id}:
+    delete:
+      summary: Delete a custom channel
+      tags: [Channels]
+      operationId: deleteChannel
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Channel deleted
+
+  /apps/{app_id}/releases:
+    get:
+      summary: List releases for an application
+      tags: [Releases]
+      operationId: getReleases
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of releases
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReleasesResp'
+    post:
+      summary: Create a new release
+      tags: [Releases]
+      operationId: createRelease
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReleaseReq'
+      responses:
+        '201':
+          description: Release created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateReleaseResp'
+
+  /apps/{app_id}/releases/{release_id}/artifacts:
+    get:
+      summary: List release artifacts
+      tags: [Releases]
+      operationId: getReleaseArtifacts
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: release_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of release artifacts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReleaseArtifactsResp'
+
+  /apps/{app_id}/releases/{release_id}/patches:
+    get:
+      summary: List patches for a release
+      tags: [Patches]
+      operationId: getReleasePatches
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: release_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of patches for release
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReleasePatchesResp'
+
+  /apps/{app_id}/patches:
+    post:
+      summary: Create a patch draft
+      tags: [Patches]
+      operationId: createPatch
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatchReq'
+      responses:
+        '201':
+          description: Patch created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePatchResp'
+
+  /apps/{app_id}/patches/promote:
+    post:
+      summary: Promote patch to a channel
+      tags: [Patches]
+      operationId: promotePatch
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotePatchReq'
+      responses:
+        '200':
+          description: Patch promoted successfully
+
+  /apps/{app_id}/patches/{patch_id}/rollback:
+    post:
+      summary: Rollback a patch
+      tags: [Patches]
+      operationId: rollbackPatch
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: patch_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Patch rolled back
+
+  /apps/{app_id}/releases/{release_id}/patches/{patch_id}/rollforward:
+    post:
+      summary: Rollforward a rolled-back patch
+      tags: [Patches]
+      operationId: rollforwardPatch
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: release_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: patch_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Patch rolled forward
+
+  /diagnostics/gcp_download:
+    get:
+      summary: Get diagnostics download URL
+      tags: [Diagnostics]
+      operationId: getDiagnosticsDownloadUrl
+      responses:
+        '200':
+          description: Download diagnostics URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosticsLinkResp'
+
+  /diagnostics/gcp_upload:
+    get:
+      summary: Get diagnostics upload URL
+      tags: [Diagnostics]
+      operationId: getDiagnosticsUploadUrl
+      responses:
+        '200':
+          description: Upload diagnostics URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosticsLinkResp'
+
+components:
+  schemas:
+    UserResp:
+      type: object
+      required:
+        - id
+        - email
+        - has_active_subscription
+        - jwt_issuer
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        display_name:
+          type: string
+          nullable: true
+        has_active_subscription:
+          type: boolean
+        jwt_issuer:
+          type: string
+
+    CreateAppReq:
+      type: object
+      required:
+        - display_name
+      properties:
+        display_name:
+          type: string
+        organization_id:
+          type: integer
+
+    RenameAppReq:
+      type: object
+      required:
+        - display_name
+      properties:
+        display_name:
+          type: string
+
+    AppResp:
+      type: object
+      required:
+        - id
+        - display_name
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+
+    AppMetadataResp:
+      type: object
+      required:
+        - app_id
+        - display_name
+        - created_at
+        - updated_at
+        - platforms
+      properties:
+        app_id:
+          type: string
+        display_name:
+          type: string
+        latest_release_version:
+          type: string
+          nullable: true
+        latest_patch_number:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        platforms:
+          type: array
+          items:
+            type: string
+
+    GetAppsResp:
+      type: object
+      required:
+        - apps
+      properties:
+        apps:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppMetadataResp'
+
+    ChannelResp:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        app_id:
+          type: string
+        name:
+          type: string
+
+    CreateChannelReq:
+      type: object
+      required:
+        - channel
+      properties:
+        channel:
+          type: string
+
+    CreateReleaseReq:
+      type: object
+      required:
+        - version
+        - flutter_revision
+      properties:
+        version:
+          type: string
+        flutter_revision:
+          type: string
+        flutter_version:
+          type: string
+        display_name:
+          type: string
+
+    ReleaseResp:
+      type: object
+      required:
+        - id
+        - app_id
+        - version
+        - flutter_revision
+        - platform_statuses
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+        app_id:
+          type: string
+        version:
+          type: string
+        flutter_revision:
+          type: string
+        flutter_version:
+          type: string
+          nullable: true
+        display_name:
+          type: string
+          nullable: true
+        platform_statuses:
+          type: object
+          additionalProperties:
+            type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    GetReleasesResp:
+      type: object
+      required:
+        - releases
+      properties:
+        releases:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseResp'
+
+    CreateReleaseResp:
+      type: object
+      required:
+        - release
+      properties:
+        release:
+          $ref: '#/components/schemas/ReleaseResp'
+
+    ReleaseArtifactResp:
+      type: object
+      required:
+        - id
+        - release_id
+        - arch
+        - platform
+        - hash
+        - size
+        - url
+        - can_sideload
+      properties:
+        id:
+          type: integer
+        release_id:
+          type: integer
+        arch:
+          type: string
+        platform:
+          type: string
+        hash:
+          type: string
+        size:
+          type: integer
+        url:
+          type: string
+        can_sideload:
+          type: boolean
+        podfile_lock_hash:
+          type: string
+
+    GetReleaseArtifactsResp:
+      type: object
+      required:
+        - artifacts
+      properties:
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseArtifactResp'
+
+    PatchArtifactResp:
+      type: object
+      required:
+        - id
+        - patch_id
+        - arch
+        - platform
+        - hash
+        - size
+        - created_at
+      properties:
+        id:
+          type: integer
+        patch_id:
+          type: integer
+        arch:
+          type: string
+        platform:
+          type: string
+        hash:
+          type: string
+        size:
+          type: integer
+        created_at:
+          type: string
+
+    ReleasePatchResp:
+      type: object
+      required:
+        - id
+        - number
+        - artifacts
+        - is_rolled_back
+      properties:
+        id:
+          type: integer
+        number:
+          type: integer
+        channel:
+          type: string
+          nullable: true
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatchArtifactResp'
+        is_rolled_back:
+          type: boolean
+
+    GetReleasePatchesResp:
+      type: object
+      required:
+        - patches
+      properties:
+        patches:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleasePatchResp'
+
+    CreatePatchReq:
+      type: object
+      required:
+        - release_id
+      properties:
+        release_id:
+          type: integer
+
+    CreatePatchResp:
+      type: object
+      required:
+        - id
+        - number
+      properties:
+        id:
+          type: integer
+        number:
+          type: integer
+
+    PromotePatchReq:
+      type: object
+      required:
+        - patch_id
+        - channel_id
+      properties:
+        patch_id:
+          type: integer
+        channel_id:
+          type: integer
+
+    DiagnosticsLinkResp:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
