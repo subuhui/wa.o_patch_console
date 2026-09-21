@@ -72,9 +72,13 @@ async function handleRename(app: AppMetadata) {
       inputErrorMessage: '应用名称长度需在 2 到 50 个字符之间',
     })
     if (value && value.trim()) {
-      await apiClient.patch(`/apps/${app.app_id}`, { display_name: value.trim() })
+      const newName = value.trim()
+      await apiClient.patch(`/apps/${app.app_id}`, {
+        name: newName,
+        display_name: newName,
+      })
       ElMessage.success('重命名成功')
-      queryClient.invalidateQueries({ queryKey: ['apps'] })
+      await queryClient.invalidateQueries({ queryKey: ['apps'] })
     }
   } catch {
     // cancelled
