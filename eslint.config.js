@@ -8,6 +8,9 @@ export default ts.config(
     ignores: [
       'dist/**',
       'node_modules/**',
+      '.agent/**',
+      '.agents/**',
+      '.trellis/**',
       'src/api/generated/**',
       'auto-imports.d.ts',
       'components.d.ts',

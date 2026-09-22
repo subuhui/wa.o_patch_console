@@ -236,18 +236,24 @@ function goToReleasePatches(relId: number) {
   margin: 0 auto;
 }
 
+.releases-page {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .header-info {
-  gap: 8px;
+  gap: 12px;
 }
 
 .page-title {
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .page-desc {
@@ -256,7 +262,8 @@ function goToReleasePatches(relId: number) {
 }
 
 .table-card {
-  border-radius: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--surface-border);
 }
 
 .sub-text {
@@ -265,7 +272,10 @@ function goToReleasePatches(relId: number) {
 }
 
 .code-text {
-  font-family: monospace;
-  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background-color: var(--el-fill-color-light);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 </style>

@@ -43,3 +43,7 @@ playwright/.cache/
 *.tsbuildinfo
 auto-imports.d.ts
 components.d.ts
+__pycache__/
+*.py[cod]
+*$py.class
+

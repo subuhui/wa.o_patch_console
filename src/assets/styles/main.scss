@@ -1,7 +1,34 @@
 :root {
-  --app-header-height: 60px;
+  --app-header-height: 64px;
   --app-sidebar-width: 240px;
-  --app-sidebar-collapsed-width: 64px;
+  --app-sidebar-collapsed-width: 68px;
+
+  /* Typography */
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    monospace;
+
+  /* Elevated Surfaces & Shadows */
+  --surface-card-bg: var(--el-bg-color-overlay);
+  --surface-border: var(--el-border-color-lighter);
+  --surface-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --surface-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.04);
+  --surface-shadow-hover: 0 8px 24px 0 rgba(0, 0, 0, 0.08);
+
+  /* Status Colors */
+  --status-active: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+  --status-info: #6366f1;
+}
+
+html.dark {
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --surface-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+  --surface-shadow-hover: 0 10px 28px 0 rgba(0, 0, 0, 0.45);
 }
 
 * {
@@ -14,8 +41,7 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -23,8 +49,31 @@ body,
 body {
   background-color: var(--el-bg-color-page);
   color: var(--el-text-color-primary);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--el-border-color-light);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--el-border-color);
+}
+
+/* Utility Flex */
 .flex-center {
   display: flex;
   align-items: center;
@@ -35,4 +84,102 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Code & Monospace Token Styling */
+.code-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
+  border: 1px solid var(--el-border-color-lighter);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: -0.01em;
+}
+
+/* Status Indicator Dot */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+
+  &.active {
+    background-color: var(--status-active);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+
+  &.warning {
+    background-color: var(--status-warning);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  }
+
+  &.danger {
+    background-color: var(--status-danger);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  }
+
+  &.pulse::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    background-color: inherit;
+    animation: status-pulse 2s infinite ease-out;
+    opacity: 0.75;
+  }
+}
+
+@keyframes status-pulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Element Plus Custom Overrides for Developer Polishing */
+.el-card {
+  --el-card-border-color: var(--surface-border);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.el-table {
+  --el-table-header-bg-color: var(--el-fill-color-light);
+  font-size: 13px;
+
+  th.el-table__cell {
+    font-weight: 600;
+    color: var(--el-text-color-secondary);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+  }
+}
+
+.el-button {
+  font-weight: 500;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }

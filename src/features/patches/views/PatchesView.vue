@@ -416,16 +416,16 @@ async function handleRollforward(patch: ReleasePatch) {
 
 <style scoped>
 .patches-page {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .header-info {
-  gap: 8px;
+  gap: 12px;
 }
 
 .header-actions {
@@ -434,8 +434,9 @@ async function handleRollforward(patch: ReleasePatch) {
 
 .page-title {
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .page-desc {
@@ -444,7 +445,8 @@ async function handleRollforward(patch: ReleasePatch) {
 }
 
 .table-card {
-  border-radius: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--surface-border);
 }
 
 .text-muted {
